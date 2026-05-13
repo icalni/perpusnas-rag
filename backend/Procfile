@@ -1,0 +1,1 @@
+web: python pipeline.py && python backend.py
