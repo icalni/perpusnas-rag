@@ -5,3 +5,4 @@ raw_books/
 .DS_Store
 files.zip
 chunks/
+backend/chromadb/
