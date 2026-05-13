@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Pengetahuan — Perpustakaan Nasional RI</title>
+<style>
+  :root {
+    --blue-dark:  #1B4F8A;
+    --blue-mid:   #2E6DB4;
+    --blue-light: #EAF2FB;
+    --green-dark: #0F5C2E;
+    --green-mid:  #1A7A3C;
+    --green-light:#E6F4EC;
+    --gray-bg:    #F4F5F7;
+    --gray-text:  #5A5A5A;
+    --border:     rgba(27,79,138,0.15);
+    --white:      #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: var(--gray-bg);
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .topbar {
+    background: #163F70;
+    padding: 5px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .topbar span { font-size: 11px; color: rgba(255,255,255,0.6); letter-spacing: 0.03em; }
+
+  nav {
+    background: var(--blue-dark);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+  .nav-logo img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+  }
+  .nav-logo-text .name { font-size: 14px; color: white; font-weight: 500; letter-spacing: 0.02em; }
+  .nav-logo-text .sub  { font-size: 10px; color: rgba(255,255,255,0.65); letter-spacing: 0.07em; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-link {
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: Georgia, serif;
+    transition: background .15s;
+    text-decoration: none;
+  }
+  .nav-link:hover, .nav-link.active {
+    background: rgba(255,255,255,0.15);
+    color: white;
+  }
+
+  /* ── Hero / Search ── */
+  .hero {
+    background: var(--blue-dark);
+    padding: 36px 24px 40px;
+    text-align: center;
+  }
+  .hero h1 {
+    color: white;
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .hero p {
+    color: rgba(255,255,255,0.68);
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  .search-box {
+    display: flex;
+    gap: 8px;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  .search-input {
+    flex: 1;
+    padding: 11px 18px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.96);
+    font-size: 14px;
+    font-family: Georgia, serif;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-input:focus { border-color: #5DCAA5; }
+  .search-input::placeholder { color: #aaa; }
+  .search-btn {
+    padding: 11px 22px;
+    background: var(--green-mid);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: Georgia, serif;
+    transition: background .15s;
+    white-space: nowrap;
+  }
+  .search-btn:hover { background: var(--green-dark); }
+  .search-btn:disabled { background: #999; cursor: not-allowed; }
+
+  .topic-pills {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .pill {
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.8);
+    border: 0.5px solid rgba(255,255,255,0.2);
+    border-radius: 99px;
+    padding: 4px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background .15s;
+    font-family: Georgia, serif;
+  }
+  .pill:hover { background: rgba(255,255,255,0.22); color: white; }
+
+  /* ── Demo Banner ── */
+  .demo-banner {
+    background: #FFF8E6;
+    border-bottom: 1px solid #F5C842;
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #7A5500;
+  }
+  .demo-tag {
+    background: #F5C842;
+    color: #7A5500;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  /* ── Main content ── */
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  /* ── Stats bar ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 14px 16px;
+    border: 0.5px solid var(--border);
+  }
+  .stat-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .stat-val   { font-size: 20px; font-weight: 500; color: var(--blue-dark); }
+  .stat-sub   { font-size: 11px; color: var(--green-mid); margin-top: 2px; }
+
+  /* ── Results area ── */
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 16px;
+  }
+
+  @media (max-width: 768px) {
+    .results-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+  }
+
+  .card {
+    background: white;
+    border-radius: 10px;
+    border: 0.5px solid var(--border);
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 12px 16px;
+    border-bottom: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--blue-dark); }
+  .card-body  { padding: 16px; }
+
+  /* ── Answer box ── */
+  .answer-label {
+    font-size: 10px;
+    color: var(--blue-dark);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .answer-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #1a1a1a;
+    white-space: pre-wrap;
+  }
+  .answer-placeholder {
+    font-size: 13px;
+    color: #aaa;
+    text-align: center;
+    padding: 32px 0;
+  }
+
+  /* ── Loading ── */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 32px 0;
+  }
+  .loading.active { display: block; }
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--blue-light);
+    border-top-color: var(--blue-dark);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: #888; }
+
+  /* ── Sources ── */
+  .source-item {
+    padding: 10px 0;
+    border-bottom: 0.5px solid rgba(0,0,0,0.06);
+  }
+  .source-item:last-child { border-bottom: none; }
+  .source-title { font-size: 12px; font-weight: 500; color: var(--blue-dark); margin-bottom: 2px; }
+  .source-meta  { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .source-score {
+    display: inline-block;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-right: 4px;
+  }
+  .source-topic {
+    display: inline-block;
+    background: var(--green-light);
+    color: var(--green-dark);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .source-snippet {
+    font-size: 11px;
+    color: #666;
+    line-height: 1.5;
+    margin-top: 5px;
+    font-style: italic;
+  }
+
+  /* ── Trending ── */
+  .trend-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+  }
+  .trend-name { font-size: 12px; color: #333; flex: 1; }
+  .trend-bar-bg { flex: 2; height: 5px; background: var(--blue-light); border-radius: 3px; overflow: hidden; }
+  .trend-bar { height: 100%; border-radius: 3px; background: var(--blue-mid); }
+  .trend-count { font-size: 11px; color: #999; min-width: 24px; text-align: right; }
+
+  /* ── Collection grid ── */
+  .collection-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .collection-item {
+    border-radius: 7px;
+    padding: 9px 11px;
+    border-left: 3px solid;
+  }
+  .collection-item.blue  { background: var(--blue-light);  border-color: var(--blue-mid); }
+  .collection-item.green { background: var(--green-light); border-color: var(--green-mid); }
+  .collection-item-title { font-size: 11px; font-weight: 500; margin-bottom: 2px; }
+  .collection-item.blue  .collection-item-title { color: var(--blue-dark); }
+  .collection-item.green .collection-item-title { color: var(--green-dark); }
+  .collection-item-meta  { font-size: 10px; color: #777; }
+
+  /* ── Error ── */
+  .error-box {
+    background: #FFF0F0;
+    border: 0.5px solid #FFAAAA;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 13px;
+    color: #A00;
+    display: none;
+  }
+  .error-box.active { display: block; }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 11px;
+    color: #aaa;
+  }
+  footer a { color: var(--blue-mid); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <span>Portal Pengetahuan Nasional — Perpustakaan Nasional Republik Indonesia</span>
+  <span>perpusnas.go.id</span>
+</div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">
+    <img src="logo.png" alt="Logo Perpusnas" onerror="this.style.display='none'">
+    <div class="nav-logo-text">
+      <div class="name">Perpustakaan Nasional</div>
+      <div class="sub">REPUBLIK INDONESIA</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link active" href="#">Cari</a>
+    <a class="nav-link" href="#">Koleksi</a>
+    <a class="nav-link" href="#">Statistik</a>
+    <a class="nav-link" href="#">Tentang</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>Temukan Pengetahuan dari Koleksi Nasional</h1>
+  <p>Tanyakan apa saja — sistem kami menjawab dari sumber koleksi yang terverifikasi</p>
+  <div class="search-box">
+    <input class="search-input" id="queryInput" type="text"
+      placeholder="Contoh: Apa penyebab Perang Saudara Amerika?">
+    <button class="search-btn" id="searchBtn" onclick="doSearch()">Tanya</button>
+  </div>
+  <div class="topic-pills">
+    <span class="pill" onclick="setQuery('Apa penyebab perang saudara Amerika?')">Perang Saudara</span>
+    <span class="pill" onclick="setQuery('Bagaimana proses seleksi alam menurut Darwin?')">Seleksi Alam</span>
+    <span class="pill" onclick="setQuery('Apa yang menyebabkan Revolusi Perancis?')">Revolusi Perancis</span>
+    <span class="pill" onclick="setQuery('Apa dampak kerusakan lingkungan terhadap alam?')">Lingkungan</span>
+  </div>
+</div>
+
+<!-- Demo banner -->
+<div class="demo-banner">
+  <span class="demo-tag">VERSI DEMO</span>
+  <span>Sistem ini menggunakan teks domain publik dari Project Gutenberg. Pada produksi, sistem akan menggunakan koleksi resmi Perpusnas.</span>
+</div>
+
+<!-- Main -->
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Total dokumen</div>
+      <div class="stat-val">15</div>
+      <div class="stat-sub">buku diindeks</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total vektor</div>
+      <div class="stat-val">6,666</div>
+      <div class="stat-sub">chunks tersimpan</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Topik tersedia</div>
+      <div class="stat-val">4</div>
+      <div class="stat-sub">kategori aktif</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Status sistem</div>
+      <div class="stat-val" style="font-size:14px;color:#1A7A3C;padding-top:3px;" id="statusVal">Memeriksa...</div>
+      <div class="stat-sub" id="statusSub"></div>
+    </div>
+  </div>
+
+  <!-- Results grid -->
+  <div class="results-grid">
+
+    <!-- Left: Answer -->
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-head">
+          <span class="card-title">&#10024; Ringkasan</span>
+          <span style="font-size:10px;color:#aaa;" id="answerMeta"></span>
+        </div>
+        <div class="card-body">
+          <div class="error-box" id="errorBox"></div>
+          <div class="loading" id="loadingBox">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loadingText">Mencari di koleksi...</div>
+          </div>
+          <div id="answerArea">
+            <div class="answer-placeholder">
+              Ketik pertanyaan di atas atau pilih topik untuk memulai
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sources -->
+      <div class="card" id="sourcesCard" style="display:none;">
+        <div class="card-head">
+          <span class="card-title">&#128218; Sumber yang digunakan</span>
+          <span style="font-size:10px;color:#aaa;" id="sourcesCount"></span>
+        </div>
+        <div class="card-body" id="sourcesList"></div>
+      </div>
+    </div>
+
+    <!-- Right: Sidebar -->
+    <div>
+      <!-- Trending -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-head">
+          <span class="card-title">&#128200; Topik populer</span>
+        </div>
+        <div class="card-body">
+          <div class="trend-row">
+            <span class="trend-name">Perang Saudara Amerika</span>
+            <div class="trend-bar-bg"><div class="trend-bar" style="width:85%"></div></div>
+            <span class="trend-count">42</span>
+          </div>
+          <div class="trend-row">
+            <span class="trend-name">Revolusi Perancis</span>
+            <div class="trend-bar-bg"><div class="trend-bar" style="width:70%"></div></div>
+            <span class="trend-count">35</span>
+          </div>
+          <div class="trend-row">
+            <span class="trend-name">Seleksi alam Darwin</span>
+            <div class="trend-bar-bg"><div class="trend-bar" style="width:55%;background:#1A7A3C"></div></div>
+            <span class="trend-count">27</span>
+          </div>
+          <div class="trend-row">
+            <span class="trend-name">Konservasi lingkungan</span>
+            <div class="trend-bar-bg"><div class="trend-bar" style="width:40%;background:#1A7A3C"></div></div>
+            <span class="trend-count">20</span>
+          </div>
+          <div class="trend-row">
+            <span class="trend-name">Kejatuhan Romawi</span>
+            <div class="trend-bar-bg"><div class="trend-bar" style="width:28%"></div></div>
+            <span class="trend-count">14</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collection -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">&#128193; Koleksi demo</span>
+        </div>
+        <div class="card-body">
+          <div class="collection-grid">
+            <div class="collection-item blue">
+              <div class="collection-item-title">Perang Saudara</div>
+              <div class="collection-item-meta">4 buku · 1,225 chunk</div>
+            </div>
+            <div class="collection-item green">
+              <div class="collection-item-title">Alam & Hayati</div>
+              <div class="collection-item-meta">4 buku · 1,668 chunk</div>
+            </div>
+            <div class="collection-item blue">
+              <div class="collection-item-title">Sejarah Eropa</div>
+              <div class="collection-item-meta">4 buku · 2,569 chunk</div>
+            </div>
+            <div class="collection-item green">
+              <div class="collection-item-title">Lingkungan</div>
+              <div class="collection-item-meta">3 buku · 1,204 chunk</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  Portal Pengetahuan Nasional — Perpustakaan Nasional Republik Indonesia &nbsp;·&nbsp;
+  Sumber demo: <a href="https://www.gutenberg.org" target="_blank">Project Gutenberg</a> (domain publik) &nbsp;·&nbsp;
+  <span style="color:#e07a00;">Jawaban bersifat informatif. Selalu verifikasi dari sumber asli.</span>
+</footer>
+
+<script>
+  // ── Config ──────────────────────────────────────────────────────────────
+  // Change this to your Railway URL after deployment
+  const API_BASE = "http://localhost:8000";
+
+  // ── Health check ────────────────────────────────────────────────────────
+  async function checkHealth() {
+    try {
+      const res  = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(4000) });
+      const data = await res.json();
+      document.getElementById("statusVal").textContent = "Aktif";
+      document.getElementById("statusVal").style.color = "#1A7A3C";
+      document.getElementById("statusSub").textContent = `${data.vectors.toLocaleString()} vektor siap`;
+    } catch {
+      document.getElementById("statusVal").textContent = "Offline";
+      document.getElementById("statusVal").style.color = "#cc0000";
+      document.getElementById("statusSub").textContent = "backend tidak terjangkau";
+    }
+  }
+
+  // ── Search ───────────────────────────────────────────────────────────────
+  function setQuery(q) {
+    document.getElementById("queryInput").value = q;
+    doSearch();
+  }
+
+  async function doSearch() {
+    const q = document.getElementById("queryInput").value.trim();
+    if (!q) return;
+
+    const btn     = document.getElementById("searchBtn");
+    const loading = document.getElementById("loadingBox");
+    const answer  = document.getElementById("answerArea");
+    const errBox  = document.getElementById("errorBox");
+    const sources = document.getElementById("sourcesCard");
+
+    // Reset
+    btn.disabled     = true;
+    btn.textContent  = "Mencari...";
+    loading.classList.add("active");
+    answer.innerHTML = "";
+    errBox.classList.remove("active");
+    sources.style.display = "none";
+    document.getElementById("answerMeta").textContent = "";
+
+    // Animate loading text
+    const steps = ["Mencari di koleksi...", "Mengambil konteks relevan...", "Merangkum jawaban..."];
+    let si = 0;
+    const stepTimer = setInterval(() => {
+      document.getElementById("loadingText").textContent = steps[Math.min(si++, steps.length - 1)];
+    }, 1200);
+
+    try {
+      const res  = await fetch(`${API_BASE}/query`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ question: q })
+      });
+
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      const data = await res.json();
+
+      clearInterval(stepTimer);
+      loading.classList.remove("active");
+
+      // Show answer
+      answer.innerHTML = `
+        <div style="background:#EAF2FB;border-radius:8px;padding:14px;border-left:3px solid #1B4F8A;margin-bottom:4px;">
+          <div class="answer-label">&#128196; Jawaban — dari sumber terverifikasi</div>
+          <div class="answer-text">${escHtml(data.answer)}</div>
+        </div>`;
+
+      document.getElementById("answerMeta").textContent =
+        `${data.chunks_retrieved} chunk diambil`;
+
+      // Show sources
+      if (data.sources && data.sources.length > 0) {
+        sources.style.display = "block";
+        document.getElementById("sourcesCount").textContent =
+          `${data.sources.length} sumber`;
+        document.getElementById("sourcesList").innerHTML =
+          data.sources.map(s => `
+            <div class="source-item">
+              <div class="source-title">${escHtml(s.title)}</div>
+              <div class="source-meta">${escHtml(s.author)} &bull; ${s.year}</div>
+              <span class="source-score">Skor: ${s.score}</span>
+              <span class="source-topic">${escHtml(s.topic)}</span>
+              <div class="source-snippet">"${escHtml(s.snippet.substring(0, 160))}..."</div>
+            </div>`).join("");
+      }
+
+    } catch (err) {
+      clearInterval(stepTimer);
+      loading.classList.remove("active");
+      errBox.textContent = `Gagal terhubung ke backend: ${err.message}. Pastikan backend berjalan di ${API_BASE}`;
+      errBox.classList.add("active");
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = "Tanya";
+    }
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  // Enter key
+  document.getElementById("queryInput")
+    .addEventListener("keydown", e => { if (e.key === "Enter") doSearch(); });
+
+  // Check backend on load
+  checkHealth();
+</script>
+</body>
+</html>

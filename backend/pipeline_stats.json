@@ -1,0 +1,95 @@
+{
+  "books": [
+    {
+      "title": "Personal Memoirs of U.S. Grant",
+      "topic": "Civil War",
+      "char_count": 1606157,
+      "chunk_count": 805
+    },
+    {
+      "title": "The Red Badge of Courage",
+      "topic": "Civil War",
+      "char_count": 258255,
+      "chunk_count": 132
+    },
+    {
+      "title": "Narrative of the Life of Frederick Douglass",
+      "topic": "Civil War",
+      "char_count": 223913,
+      "chunk_count": 117
+    },
+    {
+      "title": "The Civil War",
+      "topic": "Civil War",
+      "char_count": 332816,
+      "chunk_count": 171
+    },
+    {
+      "title": "History of the Decline and Fall of the Roman Empire Vol.1",
+      "topic": "History of Europe",
+      "char_count": 1633100,
+      "chunk_count": 777
+    },
+    {
+      "title": "The French Revolution",
+      "topic": "History of Europe",
+      "char_count": 1902772,
+      "chunk_count": 871
+    },
+    {
+      "title": "A History of France",
+      "topic": "History of Europe",
+      "char_count": 1339913,
+      "chunk_count": 707
+    },
+    {
+      "title": "The History of England Vol.1",
+      "topic": "History of Europe",
+      "char_count": 418580,
+      "chunk_count": 214
+    },
+    {
+      "title": "On the Origin of Species",
+      "topic": "Nature",
+      "char_count": 932659,
+      "chunk_count": 450
+    },
+    {
+      "title": "Walden",
+      "topic": "Nature",
+      "char_count": 632965,
+      "chunk_count": 338
+    },
+    {
+      "title": "The Voyage of the Beagle",
+      "topic": "Nature",
+      "char_count": 1182361,
+      "chunk_count": 592
+    },
+    {
+      "title": "A Naturalist's Voyage Round the World",
+      "topic": "Nature",
+      "char_count": 564978,
+      "chunk_count": 288
+    },
+    {
+      "title": "Man and Nature",
+      "topic": "Environment",
+      "char_count": 1398170,
+      "chunk_count": 684
+    },
+    {
+      "title": "Our Vanishing Wild Life",
+      "topic": "Environment",
+      "char_count": 1052877,
+      "chunk_count": 515
+    },
+    {
+      "title": "Mutual Aid: A Factor of Evolution",
+      "topic": "Environment",
+      "char_count": 9890,
+      "chunk_count": 5
+    }
+  ],
+  "total_chunks": 6666
+}

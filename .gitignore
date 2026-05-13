@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+raw_books/
+.DS_Store
+files.zip
+chunks/
