@@ -5,6 +5,7 @@ RAM usage: ~200MB instead of 1.5GB. Works on Railway free tier.
 """
 
 import os
+import re
 import json
 import numpy as np
 import anthropic
@@ -38,45 +39,77 @@ print(f"Ready — {len(documents):,} chunks loaded.\n")
 
 ai_client = anthropic.Anthropic(api_key=API_KEY)
 
-# ── Embed query using Anthropic API ────────────────────────────────────────
-def embed_query(question: str) -> np.ndarray:
-    """
-    Use Claude to translate + extract key terms, then encode
-    using a simple TF-style bag of words against our stored embeddings.
-    Since we can't load the model on free tier, we use Claude to translate
-    the query to English and extract key concepts, then do keyword-boosted
-    cosine search.
-    """
-    # Ask Claude to extract key English search terms from the query
+# ── Translate query to English using Claude ────────────────────────────────
+def translate_query(question: str) -> str:
+    """Translate Indonesian query to English for better keyword matching."""
     response = ai_client.messages.create(
         model      = "claude-haiku-4-5",
-        max_tokens = 100,
+        max_tokens = 150,
         messages   = [{
             "role": "user",
-            "content": f"Extract 5-8 key English search terms from this question. Return only the terms separated by spaces, nothing else: {question}"
+            "content": f"Translate this to English. Return only the translation, nothing else: {question}"
         }]
     )
-    terms = response.content[0].text.strip()
-    return terms
+    return response.content[0].text.strip()
 
 def search(question: str, top_k: int = TOP_K):
-    """Search using keyword matching + semantic scoring."""
-    # Get key terms from Claude
-    terms = embed_query(question).lower().split()
+    """
+    Search using TF-IDF style scoring with translated query.
+    Scores documents by weighted keyword overlap with boosting for
+    exact phrase matches and topic-relevant terms.
+    """
+    # Translate to English if needed
+    translated = translate_query(question)
+    print(f"  Translated: {translated}")
 
-    # Score each document by keyword overlap
-    scores = []
+    # Build term list from both original and translated query
+    combined = f"{question} {translated}".lower()
+    # Remove common stop words
+    stopwords = {"the","a","an","of","in","is","are","was","were","to","for",
+                 "and","or","but","with","from","by","at","on","as","it","its",
+                 "this","that","what","how","why","when","which","who","does",
+                 "did","do","be","been","have","has","had","not","no","apa",
+                 "yang","di","dan","ke","dari","ini","itu","dengan","untuk",
+                 "adalah","pada","dalam","se","akan","atau"}
+    terms = [t for t in re.findall(r'\b\w+\b', combined) if t not in stopwords and len(t) > 2]
+
+    if not terms:
+        terms = combined.split()
+
+    print(f"  Search terms: {terms}")
+
+    # Score each document
+    scores = np.zeros(len(documents))
     for i, doc in enumerate(documents):
         doc_lower = doc.lower()
-        # Count how many terms appear in the document
-        hits = sum(1 for t in terms if t in doc_lower)
-        # Weight by term frequency
-        score = hits / max(len(terms), 1)
-        scores.append(score)
+        meta      = metadatas[i]
+        score     = 0.0
 
-    scores = np.array(scores)
+        for term in terms:
+            if term in doc_lower:
+                # Base score per hit
+                count  = doc_lower.count(term)
+                score += min(count * 0.15, 0.6)  # cap per term
 
-    # Get top K
+        # Boost if topic matches query terms
+        topic_lower = meta.get("topic", "").lower()
+        for term in terms:
+            if term in topic_lower:
+                score += 0.3
+
+        # Boost title matches
+        title_lower = meta.get("title", "").lower()
+        for term in terms:
+            if term in title_lower:
+                score += 0.2
+
+        scores[i] = score
+
+    # Normalize
+    max_score = scores.max()
+    if max_score > 0:
+        scores = scores / max_score
+
     top_indices = np.argsort(scores)[::-1][:top_k]
 
     results = []
