@@ -39,76 +39,58 @@ print(f"Ready — {len(documents):,} chunks loaded.\n")
 
 ai_client = anthropic.Anthropic(api_key=API_KEY)
 
-# ── Translate query to English using Claude ────────────────────────────────
-def translate_query(question: str) -> str:
-    """Translate Indonesian query to English for better keyword matching."""
+# ── Encode query via Claude (returns a pseudo-embedding using token overlap) ─
+def encode_query(question: str) -> np.ndarray:
+    """
+    Translate query to English, then compute a query vector by averaging
+    the pre-computed embeddings of the top keyword-matched documents.
+    This gives us a proper vector in the same space as our stored embeddings.
+    """
+    # Step 1: translate to English
     response = ai_client.messages.create(
         model      = "claude-haiku-4-5",
         max_tokens = 150,
         messages   = [{
             "role": "user",
-            "content": f"Translate this to English. Return only the translation, nothing else: {question}"
+            "content": f"Translate to English. Return only the translation, nothing else: {question}"
         }]
     )
-    return response.content[0].text.strip()
-
-def search(question: str, top_k: int = TOP_K):
-    """
-    Search using TF-IDF style scoring with translated query.
-    Scores documents by weighted keyword overlap with boosting for
-    exact phrase matches and topic-relevant terms.
-    """
-    # Translate to English if needed
-    translated = translate_query(question)
+    translated = response.content[0].text.strip()
     print(f"  Translated: {translated}")
 
-    # Build term list from both original and translated query
-    combined = f"{question} {translated}".lower()
-    # Remove common stop words
-    stopwords = {"the","a","an","of","in","is","are","was","were","to","for",
-                 "and","or","but","with","from","by","at","on","as","it","its",
-                 "this","that","what","how","why","when","which","who","does",
-                 "did","do","be","been","have","has","had","not","no","apa",
-                 "yang","di","dan","ke","dari","ini","itu","dengan","untuk",
-                 "adalah","pada","dalam","se","akan","atau"}
-    terms = [t for t in re.findall(r'\b\w+\b', combined) if t not in stopwords and len(t) > 2]
+    # Step 2: keyword match to find seed documents
+    terms = re.findall(r'\b\w{3,}\b', translated.lower())
+    stopwords = {"the","and","for","are","was","were","that","this",
+                 "with","from","have","had","been","they","their","what",
+                 "which","when","how","why","its","not","but","also"}
+    terms = [t for t in terms if t not in stopwords]
 
-    if not terms:
-        terms = combined.split()
-
-    print(f"  Search terms: {terms}")
-
-    # Score each document
-    scores = np.zeros(len(documents))
+    keyword_scores = np.zeros(len(documents))
     for i, doc in enumerate(documents):
         doc_lower = doc.lower()
-        meta      = metadatas[i]
-        score     = 0.0
+        keyword_scores[i] = sum(1 for t in terms if t in doc_lower)
 
-        for term in terms:
-            if term in doc_lower:
-                # Base score per hit
-                count  = doc_lower.count(term)
-                score += min(count * 0.15, 0.6)  # cap per term
-
-        # Boost if topic matches query terms
-        topic_lower = meta.get("topic", "").lower()
-        for term in terms:
-            if term in topic_lower:
-                score += 0.3
-
-        # Boost title matches
-        title_lower = meta.get("title", "").lower()
-        for term in terms:
-            if term in title_lower:
-                score += 0.2
-
-        scores[i] = score
+    # Step 3: use top keyword matches to build query vector
+    top_seed = np.argsort(keyword_scores)[::-1][:20]
+    seed_embs = embeddings[top_seed]
+    # Weight by keyword score
+    weights = keyword_scores[top_seed]
+    weights = weights / (weights.sum() + 1e-9)
+    query_vec = (seed_embs * weights[:, None]).sum(axis=0)
 
     # Normalize
-    max_score = scores.max()
-    if max_score > 0:
-        scores = scores / max_score
+    norm = np.linalg.norm(query_vec)
+    if norm > 0:
+        query_vec = query_vec / norm
+
+    return query_vec
+
+def search(question: str, top_k: int = TOP_K):
+    """Cosine similarity search using pre-computed embeddings."""
+    query_vec = encode_query(question)
+
+    # Cosine similarity (embeddings already normalized)
+    scores = embeddings @ query_vec
 
     top_indices = np.argsort(scores)[::-1][:top_k]
 
